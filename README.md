@@ -2,7 +2,7 @@
 My classwork from W25 [BIMM143](https://bioboot.github.io/bimm143_W25/) at UC San Diego
 
 
-~Class05 [Lab5 Data Viz with ggplot](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/Lab5/Lab5%20Data%20Viz%20with%20ggplot.qmd)
+~Class05 [Data Viz with ggplot](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/Lab5/Lab5%20Data%20Viz%20with%20ggplot.qmd)
 
 ~Class06 [R functions](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/Class%206/HWClass6.qmd)
 
