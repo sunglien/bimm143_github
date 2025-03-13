@@ -8,4 +8,4 @@ My classwork from W25 [BIMM143](https://bioboot.github.io/bimm143_W25/) at UC Sa
 
 ~Class07 [Introduction to machine learning for Bioinformatics 1](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/Class7%3AMachine%20Learning%201/Class7MachineLearning1.qmd)
 
-~Class08 [Unsupervised learning mini-project](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/Class8PCA%20mini%20project/Class%208%20PCA%20mini%20project.qmd)
+~Class08 [PCA mini-project](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/Class8PCA%20mini%20project/Class%208%20PCA%20mini%20project.qmd)
