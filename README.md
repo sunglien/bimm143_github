@@ -18,6 +18,6 @@ My classwork from W25 [BIMM143](https://bioboot.github.io/bimm143_W25/) at UC Sa
 
 ~Class12 [Week 7 Lab sesssion](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/week07%20class%2012/week7labsession.Rmd)
 
-~Class13 [Class13: RNA Seq (pt.1)](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/Class13/Class13-%20RNA%20Seq%20(pt.1).qmd)
+~Class13 [RNA Seq (pt.1)](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/Class13/Class13-%20RNA%20Seq%20(pt.1).qmd)
 
 ~Class14 [RNA-Seq  analysis mini-project](https://raw.githubusercontent.com/sunglien/bimm143_github/refs/heads/main/Class14/Class14-%20RNA-Seq%20%20analysis%20mini-project.qmd)
