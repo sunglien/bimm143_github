@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PIANO 40‑Second Drill (Vanilla JS)</title>
+  <title>PIANO 40-Second Drill (Vanilla JS)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body { height: 100%; }
@@ -14,8 +14,8 @@
   <div class="max-w-5xl mx-auto p-4 sm:p-6">
     <header class="flex flex-col sm:flex-row sm:items-end gap-3 justify-between mb-4">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">PIANO 40‑Second Drill</h1>
-        <p class="text-sm text-slate-600">Vanilla JS build (no React/Babel). Answers auto‑reveal at 0.</p>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">PIANO 40-Second Drill</h1>
+        <p class="text-sm text-slate-600">Prompt shows a muscle name. Answers (P·I·A·N·O) auto-reveal when the timer hits zero.</p>
       </div>
       <div class="flex items-center gap-2 text-slate-700">
         <span class="text-xs">Card</span>
@@ -25,6 +25,7 @@
       </div>
     </header>
 
+    <!-- Controls -->
     <section class="grid gap-4 sm:grid-cols-3 mb-6">
       <div class="bg-white rounded-2xl shadow p-4 flex flex-col items-center justify-center">
         <div id="clock" class="text-5xl font-bold tabular-nums">00:40</div>
@@ -41,7 +42,7 @@
         <input id="duration" type="range" min="10" max="120" step="5" value="40" class="w-full mt-2" />
         <label class="mt-3 flex items-center gap-2 text-sm">
           <input id="autoStart" type="checkbox" checked />
-          Auto‑start timer on Next
+          Auto-start timer on Next
         </label>
       </div>
 
@@ -54,6 +55,7 @@
       </div>
     </section>
 
+    <!-- Card -->
     <section class="bg-white rounded-3xl shadow p-6">
       <div class="flex flex-col md:flex-row gap-6">
         <div class="md:w-1/3">
@@ -93,21 +95,18 @@
                 </div>
               </dl>
             </div>
-            <div id="revealBlock" class="mt-4">
-              <button id="btnReveal2" class="px-4 py-2 rounded-xl bg-emerald-600 text-white hover:opacity-90">Reveal now</button>
-            </div>
           </div>
         </div>
       </div>
     </section>
 
     <footer class="mt-6 text-xs text-slate-500 text-center">
-      <p>Single‑file app for quick anatomy drills. Host anywhere (e.g., GitHub Pages).</p>
+      <p>Single-file app for quick anatomy drills. Host anywhere (e.g., GitHub Pages).</p>
     </footer>
   </div>
 
   <script>
-    // ---------- DATA (29 provided + 2 placeholders to reach 31) ----------
+    // ------------------ DATA ------------------
     const cards = [
       { name: 'Gluteus Maximus', origin: 'Ilium, sacrum, coccyx, sacrotuberous ligament', insertion: 'Gluteal tuberosity, iliotibial tract (IT Band)', actions: 'Hip ER, EXT', innervation: 'VR L5-S2 Inferior gluteal n.', perfusion: 'Superior + Inferior gluteal aa/vv.' },
       { name: 'Gluteus Medius', origin: 'Anterior and Posterior gluteal lines (Ilium)', insertion: 'Greater trochanter', actions: 'Hip IR, ABD + Hip stabilization', innervation: 'VR L4-S1 Superior gluteal n.', perfusion: 'Superior gluteal aa/vv.' },
@@ -117,41 +116,32 @@
       { name: 'Obturator Internus', origin: 'Ischiopubic ramus, Obturator membrane', insertion: 'Greater trochanter', actions: 'Hip ER, ABD', innervation: 'VR L5-S2 n. to superior gemellus and obturator internus mm.', perfusion: 'Inferior Gluteal aa/vv' },
       { name: 'Inferior Gemellus', origin: 'Ischial tuberosity', insertion: 'Greater trochanter (via obturator internus tendon)', actions: 'Hip ER', innervation: 'VR L4-S1 n. to inferior gemellus and Quadratus Femoris mm.', perfusion: 'Inferior Gluteal aa/vv' },
       { name: 'Quadratus Femoris', origin: 'Ischial tuberosity', insertion: 'Intertrochanteric crest', actions: 'Hip ER', innervation: 'VR L4-S1 n. to inferior gemellus and Quadratus Femoris mm.', perfusion: 'Inferior Gluteal aa/vv' },
-      { name: 'Psoas Major', origin: 'Transverse process (TP), Intervertebral Disks (IVD) and Bodies of T12-L5', insertion: 'Lesser Trochanter', actions: 'Hip FLX, Trunk FLX', innervation: 'VR T12 Subcostal n. + L1-L3 spinal n.', perfusion: 'Now: Abdominal Aorta; Later: 12th Anterior Intercostal aa/vv.; #1-3 Lumbar aa/vv.' },
-      { name: 'Psoas Minor', origin: 'Intervertebral Disks (IVD), and bodies of T12-L1', insertion: 'Lesser Trochanter', actions: 'aids in Trunk FLX', innervation: 'VR T12 Subcostal n. + L1 spinal n.', perfusion: 'Now: Abdominal Aorta; Later: 12th Anterior Intercostal aa/vv.; #1-3 Lumbar aa/vv.' },
-      { name: 'Iliacus', origin: 'Iliac fossa, Ala of sacrum, TP, IVD, and bodies of T12-L5', insertion: 'Lesser Trochanter', actions: 'Hip FLX', innervation: 'VR L2-L4 femoral n.', perfusion: 'External Iliac aa/vv.' },
-      { name: 'Iliopsoas', origin: 'Iliac fossa, Ala of sacrum, TP, IVD, and bodies of T12-L5', insertion: 'Lesser Trochanter', actions: 'Hip FLX', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
+      { name: 'Psoas Major', origin: 'TP + IVD + Bodies T12-L5', insertion: 'Lesser Trochanter', actions: 'Hip FLX, Trunk FLX', innervation: 'VR T12 Subcostal n. + L1-L3 spinal n.', perfusion: 'Abdominal Aorta, 12th Ant Intercostal, 1-3 Lumbar aa/vv.' },
+      { name: 'Psoas Minor', origin: 'IVD + Bodies T12-L1', insertion: 'Lesser Trochanter', actions: 'Aids Trunk FLX', innervation: 'VR T12 Subcostal n. + L1 spinal n.', perfusion: 'Abdominal Aorta, 12th Ant Intercostal, 1-3 Lumbar aa/vv.' },
+      { name: 'Iliacus', origin: 'Iliac fossa, Ala of sacrum, TP, IVD, T12-L5', insertion: 'Lesser Trochanter', actions: 'Hip FLX', innervation: 'VR L2-L4 femoral n.', perfusion: 'External Iliac aa/vv.' },
+      { name: 'Iliopsoas', origin: 'Iliac fossa, Ala of sacrum, TP, IVD, T12-L5', insertion: 'Lesser Trochanter', actions: 'Hip FLX', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
       { name: 'Sartorius', origin: 'ASIS', insertion: 'Pes Anserine (medial tibia)', actions: 'Hip FLX, ER, ABD + Leg IR, FLX', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
-      { name: 'Rectus Femoris', origin: 'AIIS, posterior-superior rim of acetabulum', insertion: 'base of patella, tibial tuberosity', actions: 'Hip FLX, and leg EXT', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
-      { name: 'Vastus Medialis', origin: 'Intertrochanteric line, linea aspera, medial intermuscular septum', insertion: 'medial side of patella, tibial tuberosity', actions: 'Leg EXT', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
-      { name: 'Vastus Lateralis', origin: 'Intertrochanteric line, linea aspera, lateral intermuscular septum, greater trochanter, gluteal tuberosity', insertion: 'lateral side of patella, tibial tuberosity', actions: 'Leg EXT', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
-      { name: 'Vastus Intermedius', origin: 'upper shaft of femur, lower lateral intermuscular septum', insertion: 'upper border of patella, tibial tubeosity', actions: 'Leg EXT', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
-      { name: 'Articularis Genu', origin: 'Distal Femur (Anterior portion)', insertion: 'suprapatellar bursa', actions: 'Pulls suprapatellar tendon superiorly', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
-      { name: 'Pectineus', origin: 'pectineal line of pubis bone', insertion: 'pectineal line of femur bone', actions: 'Hip FLX, ADD', innervation: 'VR L2-L4 femoral n. + VR L2-L4 obturator n.', perfusion: 'Femoral aa/vv. + Obturator aa/vv.' },
-      { name: 'Adductor Magnus', origin: 'Ischial tuberosity, Ischiopubic ramus', insertion: 'Adductor tubercle, Linea Aspera, Medial supracondylar line of femur (ATLAS)', actions: 'Hip ADD, EXT, FLX', innervation: 'VR L2-L4 Obturator n. + VR L4-S3 tibial division of sciatic n.', perfusion: 'Obturator aa/vv. + Profundus femoris aa/vv.' },
-      { name: 'Adductor Longus', origin: 'Body of Pubis', insertion: 'Linea Aspera', actions: 'Hip ADD, FLX', innervation: 'VR L2-L4 Obturator n.', perfusion: 'Obturator aa/vv.' },
-      { name: 'Adductor Brevis', origin: 'Body of Pubis', insertion: 'pectineal line of femur, linea aspera', actions: 'Hip ADD, FLX', innervation: 'VR L2-L4 Obturator n.', perfusion: 'Obturator aa/vv.' },
-      { name: 'Gracilis', origin: 'Body of Pubis', insertion: 'Pes Anserine (medial tibia)', actions: 'Hip ADD, FLX + Leg FLX, IR', innervation: 'VR L2-L4 Obturator n.', perfusion: 'Obturator aa/vv.' },
-      { name: 'Obturator Externus', origin: 'margin of obturator foramen and obturator membrane', insertion: 'intertrochanteric fossa of femur', actions: 'Hip ER', innervation: 'VR L2-L4 Obturator n.', perfusion: 'Obturator aa/vv.' },
-      { name: 'Tensor Fascia Latae (TFL)', origin: 'ASIS; iliac crest', insertion: 'iliotibial tract (IT Band)', actions: 'Hip FLX, IR, ABD + (Hip stabilization)', innervation: 'VR L4-S1 Superior gluteal n.', perfusion: 'Superior gluteal aa/vv.' },
-      { name: 'Semitendinosus', origin: 'Ischial tuberosity', insertion: 'Pes Anserine (medial tibia)', actions: 'Hip EXT + Leg FLX, IR', innervation: 'VR L4-S3 Tibial division of Sciatic n.', perfusion: 'Profundus femoris aa/vv.' },
-      { name: 'Semimembranosus', origin: 'Ischial tuberosity', insertion: 'Medial condyle of tibia', actions: 'Hip EXT + Leg FLX, IR', innervation: 'VR L4-S3 Tibial division of Sciatic n.', perfusion: 'Profundus femoris aa/vv.' },
-      { name: 'Biceps Femoris (Long head)', origin: 'Ischial tuberosity', insertion: 'head of fibula', actions: 'Hip EXT + Leg FLX, ER', innervation: 'VR L4-S3 Tibial division of Sciatic n.', perfusion: 'Profundus femoris aa/vv.' },
-      { name: 'Biceps Femoris (Short Head)', origin: 'Linea Aspera; Lateral Supracondylar line of Femur', insertion: 'head of fibula', actions: 'Leg FLX , ER', innervation: 'VR L4-S3 Common Fibular division of Sciatic n.', perfusion: 'Profundus femoris aa/vv.' },
-      // Placeholders (tell me which two you want and I’ll fill them):
-      { name: '— Slot 30 —', origin: '', insertion: '', actions: '', innervation: '', perfusion: '' },
-      { name: '— Slot 31 —', origin: '', insertion: '', actions: '', innervation: '', perfusion: '' },
+      { name: 'Rectus Femoris', origin: 'AIIS, acetabular rim', insertion: 'Base of patella, tibial tuberosity', actions: 'Hip FLX, Leg EXT', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
+      { name: 'Vastus Medialis', origin: 'Intertrochanteric line, linea aspera', insertion: 'Medial patella, tibial tuberosity', actions: 'Leg EXT', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
+      { name: 'Vastus Lateralis', origin: 'Intertrochanteric line, linea aspera, greater trochanter', insertion: 'Lateral patella, tibial tuberosity', actions: 'Leg EXT', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
+      { name: 'Vastus Intermedius', origin: 'Upper femur shaft', insertion: 'Upper patella, tibial tuberosity', actions: 'Leg EXT', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
+      { name: 'Articularis Genu', origin: 'Distal femur (anterior)', insertion: 'Suprapatellar bursa', actions: 'Pulls suprapatellar bursa superiorly', innervation: 'VR L2-L4 femoral n.', perfusion: 'Femoral aa/vv.' },
+      { name: 'Pectineus', origin: 'Pubis (pectineal line)', insertion: 'Femur (pectineal line)', actions: 'Hip FLX, ADD', innervation: 'VR L2-L4 femoral n. + obturator n.', perfusion: 'Femoral + Obturator aa/vv.' },
+      { name: 'Adductor Magnus', origin: 'Ischial tuberosity, ischiopubic ramus', insertion: 'Adductor tubercle, linea aspera', actions: 'Hip ADD, EXT, FLX', innervation: 'Obturator n. + Tibial sciatic n.', perfusion: 'Obturator + Profundus femoris aa/vv.' },
+      { name: 'Adductor Longus', origin: 'Pubis body', insertion: 'Linea aspera', actions: 'Hip ADD, FLX', innervation: 'VR L2-L4 obturator n.', perfusion: 'Obturator aa/vv.' },
+      { name: 'Adductor Brevis', origin: 'Pubis body', insertion: 'Linea aspera, pectineal line', actions: 'Hip ADD, FLX', innervation: 'VR L2-L4 obturator n.', perfusion: 'Obturator aa/vv.' },
+      { name: 'Gracilis', origin: 'Pubis body', insertion: 'Pes Anserine (medial tibia)', actions: 'Hip ADD, FLX + Leg FLX, IR', innervation: 'VR L2-L4 obturator n.', perfusion: 'Obturator aa/vv.' },
+      { name: 'Obturator Externus', origin: 'Obturator membrane margin', insertion: 'Intertrochanteric fossa', actions: 'Hip ER', innervation: 'VR L2-L4 obturator n.', perfusion: 'Obturator aa/vv.' },
+      { name: 'Tensor Fascia Latae (TFL)', origin: 'ASIS, iliac crest', insertion: 'IT Band', actions: 'Hip FLX, IR, ABD, stabilization', innervation: 'VR L4-S1 Superior gluteal n.', perfusion: 'Superior gluteal aa/vv.' },
+      { name: 'Semitendinosus', origin: 'Ischial tuberosity', insertion: 'Pes Anserine (medial tibia)', actions: 'Hip EXT + Leg FLX, IR', innervation: 'Tibial sciatic n.', perfusion: 'Profundus femoris aa/vv.' },
+      { name: 'Semimembranosus', origin: 'Ischial tuberosity', insertion: 'Medial tibial condyle', actions: 'Hip EXT + Leg FLX, IR', innervation: 'Tibial sciatic n.', perfusion: 'Profundus femoris aa/vv.' },
+      { name: 'Biceps Femoris (Long head)', origin: 'Ischial tuberosity', insertion: 'Fibula head', actions: 'Hip EXT + Leg FLX, ER', innervation: 'Tibial sciatic n.', perfusion: 'Profundus femoris aa/vv.' },
+      { name: 'Biceps Femoris (Short head)', origin: 'Linea aspera, lateral supracondylar line', insertion: 'Fibula head', actions: 'Leg FLX, ER', innervation: 'Common fibular sciatic n.', perfusion: 'Profundus femoris aa/vv.' }
     ];
 
-    // ---------- STATE ----------
-    let idx = 0;
-    let duration = Number(localStorage.getItem('pianoDuration')) || 40;
-    let secondsLeft = duration;
-    let running = false;
-    let autoStart = true;
-    let timerId = null;
+    // ------------------ STATE ------------------
+    let idx = 0, duration = 40, secondsLeft = 40, running = false, timerId = null;
 
-    // ---------- EL ----------
     const elClock = document.getElementById('clock');
     const elPrompt = document.getElementById('prompt');
     const elAnsP = document.getElementById('ansP');
@@ -160,95 +150,15 @@
     const elAnsN = document.getElementById('ansN');
     const elAnsO = document.getElementById('ansO');
     const elAnswers = document.getElementById('answers');
-    const elRevealBlock = document.getElementById('revealBlock');
 
     const elBtnStartPause = document.getElementById('btnStartPause');
     const elBtnReset = document.getElementById('btnReset');
     const elBtnReveal = document.getElementById('btnReveal');
-    const elBtnReveal2 = document.getElementById('btnReveal2');
     const elBtnPrev = document.getElementById('btnPrev');
     const elBtnNext = document.getElementById('btnNext');
     const elBtnShuffle = document.getElementById('btnShuffle');
     const elDuration = document.getElementById('duration');
     const elDurationLabel = document.getElementById('durationLabel');
     const elAutoStart = document.getElementById('autoStart');
-    const elCardIndex = document.getElementById('cardIndex');
-    const elCardTotal = document.getElementById('cardTotal');
-
-    // ---------- HELPERS ----------
-    const pad2 = (n) => String(n).padStart(2, '0');
-    const updateClock = () => { elClock.textContent = `${pad2(Math.floor(secondsLeft/60))}:${pad2(secondsLeft%60)}`; };
-    const setRevealed = (show) => {
-      if (show) { elAnswers.classList.remove('blurry', 'select-none', 'pointer-events-none'); }
-      else { elAnswers.classList.add('blurry', 'select-none', 'pointer-events-none'); }
-    };
-    const render = () => {
-      const c = cards[idx] || {};
-      elPrompt.textContent = c.name || '—';
-      elAnsP.textContent = c.perfusion || '—';
-      elAnsI.textContent = c.innervation || '—';
-      elAnsA.textContent = c.actions || '—';
-      elAnsN.textContent = c.innervation || '—';
-      elAnsO.textContent = `O: ${c.origin || ''}
-I: ${c.insertion || ''}`.trim();
-      elCardIndex.textContent = String(idx + 1);
-      elCardTotal.textContent = String(cards.length);
-      secondsLeft = duration; updateClock(); setRevealed(false);
-      if (autoStart) start(); else pause();
-    };
-    const start = () => {
-      if (running) return;
-      running = true; elBtnStartPause.textContent = 'Pause';
-      timerId = setInterval(() => {
-        secondsLeft -= 1; updateClock();
-        if (secondsLeft <= 0) { pause(); setRevealed(true); secondsLeft = 0; updateClock(); }
-      }, 1000);
-    };
-    const pause = () => { running = false; elBtnStartPause.textContent = 'Start'; if (timerId) { clearInterval(timerId); timerId = null; } };
-    const reset = () => { pause(); secondsLeft = duration; updateClock(); setRevealed(false); };
-
-    // ---------- EVENTS ----------
-    elBtnStartPause.addEventListener('click', () => running ? pause() : start());
-    elBtnReset.addEventListener('click', reset);
-    const doReveal = () => { pause(); setRevealed(true); };
-    elBtnReveal.addEventListener('click', doReveal);
-    elBtnReveal2.addEventListener('click', doReveal);
-
-    elBtnPrev.addEventListener('click', () => { idx = (idx - 1 + cards.length) % cards.length; render(); });
-    elBtnNext.addEventListener('click', () => { idx = (idx + 1) % cards.length; render(); });
-
-    elBtnShuffle.addEventListener('click', () => {
-      // Fisher–Yates
-      for (let i = cards.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [cards[i], cards[j]] = [cards[j], cards[i]];
-      }
-      idx = 0; render();
-      elBtnShuffle.textContent = 'Shuffled!';
-      setTimeout(() => elBtnShuffle.textContent = 'Shuffle Order', 1200);
-    });
-
-    elDuration.value = duration; elDurationLabel.textContent = duration + 's';
-    elDuration.addEventListener('input', (e) => {
-      duration = Number(e.target.value);
-      localStorage.setItem('pianoDuration', String(duration));
-      elDurationLabel.textContent = duration + 's';
-      secondsLeft = duration; updateClock();
-    });
-
-    elAutoStart.checked = true;
-    elAutoStart.addEventListener('change', (e) => { autoStart = e.target.checked; });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') { e.preventDefault(); running ? pause() : start(); }
-      else if (e.key === 'ArrowRight') { idx = (idx + 1) % cards.length; render(); }
-      else if (e.key === 'ArrowLeft') { idx = (idx - 1 + cards.length) % cards.length; render(); }
-      else if (e.key.toLowerCase() === 'r') { doReveal(); }
-    });
-
-    // ---------- INIT ----------
-    render();
-  </script>
-</body>
-</html>
+    const elCardIndex = document.getElementById('
 
