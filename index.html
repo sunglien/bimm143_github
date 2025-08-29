@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PIANO 40‑Second Drill</title>
+  <!-- Tailwind (CDN play) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { height: 100%; }
+    .blurry { filter: blur(6px); }
+  </style>
+  <!-- React 18 + Babel (CDN) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="min-h-full bg-slate-50 text-slate-900">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- Helpers ---
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const shuffleArray = (arr) => {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
+
+    const parseTSV = (text) => {
+      // Expect 6 columns per row: name \t origin \t insertion \t actions \t innervation \t perfusion
+      // Extra tabs will be folded into the current cell (join with '; ').
+      return text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+          const cells = line.split('\t');
+          const safe = (i) => (cells[i] || '').trim();
+          // If more than 6 cells, merge the extras into the last column
+          if (cells.length > 6) {
+            const merged = cells.slice(0, 5);
+            merged[5] = cells.slice(5).join(' ').trim();
+            return {
+              name: merged[0], origin: merged[1], insertion: merged[2], actions: merged[3], innervation: merged[4], perfusion: merged[5]
+            };
+          }
+          return {
+            name: safe(0), origin: safe(1), insertion: safe(2), actions: safe(3), innervation: safe(4), perfusion: safe(5)
+          };
+        });
+    };
+
+    const defaultData = [
+      {
+        name: 'Gluteus Maximus',
+        origin: 'Ilium, sacrum, coccyx, sacrotuberous ligament',
+        insertion: 'Gluteal tuberosity, iliotibial tract (IT Band)',
+        actions: 'Hip ER, EXT',
+        innervation: 'VR L5–S2 — Inferior gluteal n.',
+        perfusion: 'Superior + Inferior gluteal aa/vv.'
+      },
+      {
+        name: 'Gluteus Medius',
+        origin: 'Anterior and Posterior gluteal lines (Ilium)',
+        insertion: 'Greater trochanter',
+        actions: 'Hip IR, ABD + Hip stabilization',
+        innervation: 'VR L4–S1 — Superior gluteal n.',
+        perfusion: 'Superior gluteal aa/vv.'
+      },
+      {
+        name: 'Gluteus Minimus',
+        origin: 'Anterior and Inferior gluteal lines (Ilium)',
+        insertion: 'Greater trochanter',
+        actions: 'Hip IR, ABD + Hip stabilization',
+        innervation: 'VR L4–S1 — Superior gluteal n.',
+        perfusion: 'Superior gluteal aa/vv.'
+      },
+      {
+        name: 'Piriformis',
+        origin: 'Anterior surface of sacrum; sacrotuberous ligament',
+        insertion: 'Greater trochanter (upper end)',
+        actions: 'Hip ER',
+        innervation: 'VR S1–S2 — n. to piriformis',
+        perfusion: 'Superior + Inferior gluteal aa/vv.'
+      },
+      {
+        name: 'Superior Gemellus',
+        origin: 'Ischial spine',
+        insertion: 'Greater trochanter (via obturator internus tendon)',
+        actions: 'Hip ER',
+        innervation: 'VR L5–S2 — n. to superior gemellus & obturator internus',
+        perfusion: 'Inferior gluteal aa/vv.'
+      },
+      {
+        name: 'Obturator Internus',
+        origin: 'Ischiopubic ramus; obturator membrane',
+        insertion: 'Greater trochanter',
+        actions: 'Hip ER, ABD',
+        innervation: 'VR L5–S2 — n. to superior gemellus & obturator internus',
+        perfusion: 'Inferior gluteal aa/vv.'
+      },
+      {
+        name: 'Inferior Gemellus',
+        origin: 'Ischial tuberosity',
+        insertion: 'Greater trochanter (via obturator internus tendon)',
+        actions: 'Hip ER',
+        innervation: 'VR L4–S1 — n. to inferior gemellus & quadratus femoris',
+        perfusion: 'Inferior gluteal aa/vv.'
+      },
+      {
+        name: 'Quadratus Femoris',
+        origin: 'Ischial tuberosity',
+        insertion: 'Intertrochanteric crest',
+        actions: 'Hip ER',
+        innervation: 'VR L4–S1 — n. to inferior gemellus & quadratus femoris',
+        perfusion: 'Inferior gluteal aa/vv.'
+      },
+      {
+        name: 'Iliopsoas',
+        origin: 'Iliac fossa; ala of sacrum; TPs/IVDs/bodies T12–L5',
+        insertion: 'Lesser trochanter',
+        actions: 'Hip FLX',
+        innervation: 'VR L2–L4 — femoral n.',
+        perfusion: 'Femoral aa/vv.'
+      },
+      {
+        name: 'Sartorius',
+        origin: 'ASIS',
+        insertion: 'Pes anserine (medial tibia)',
+        actions: 'Hip FLX, ER, ABD + Leg IR, FLX',
+        innervation: 'VR L2–L4 — femoral n.',
+        perfusion: 'Femoral aa/vv.'
+      },
+      {
+        name: 'Rectus Femoris',
+        origin: 'AIIS; posterior–superior rim of acetabulum',
+        insertion: 'Base of patella; tibial tuberosity',
+        actions: 'Hip FLX; Leg EXT',
+        innervation: 'VR L2–L4 — femoral n.',
+        perfusion: 'Femoral aa/vv.'
+      },
+      {
+        name: 'Vastus Medialis',
+        origin: 'Intertrochanteric line; linea aspera; medial IMS',
+        insertion: 'Medial patella; tibial tuberosity',
+        actions: 'Leg EXT',
+        innervation: 'VR L2–L4 — femoral n.',
+        perfusion: 'Femoral aa/vv.'
+      },
+      {
+        name: 'Vastus Lateralis',
+        origin: 'Intertrochanteric line; linea aspera; lateral IMS; greater trochanter; gluteal tuberosity',
+        insertion: 'Lateral patella; tibial tuberosity',
+        actions: 'Leg EXT',
+        innervation: 'VR L2–L4 — femoral n.',
+        perfusion: 'Femoral aa/vv.'
+      },
+      {
+        name: 'Vastus Intermedius',
+        origin: 'Upper shaft of femur; lower lateral IMS',
+        insertion: 'Upper border of patella; tibial tuberosity',
+        actions: 'Leg EXT',
+        innervation: 'VR L2–L4 — femoral n.',
+        perfusion: 'Femoral aa/vv.'
+      },
+      {
+        name: 'Articularis Genu',
+        origin: 'Distal anterior femur',
+        insertion: 'Suprapatellar bursa',
+        actions: 'Pulls suprapatellar tendon superiorly',
+        innervation: 'VR L2–L4 — femoral n.',
+        perfusion: 'Femoral aa/vv.'
+      },
+      {
+        name: 'Pectineus',
+        origin: 'Pectineal line (pubis)',
+        insertion: 'Pectineal line (femur)',
+        actions: 'Hip FLX, ADD',
+        innervation: 'VR L2–L4 — femoral n. (+ obturator n.)',
+        perfusion: 'Femoral aa/vv. + Obturator aa/vv.'
+      },
+      {
+        name: 'Adductor Magnus',
+        origin: 'Ischial tuberosity; ischiopubic ramus',
+        insertion: 'Adductor tubercle; linea aspera; medial supracondylar line',
+        actions: 'Hip ADD, EXT, FLX',
+        innervation: 'VR L2–L4 — obturator n. + VR L4–S3 — tibial division of sciatic n.',
+        perfusion: 'Obturator aa/vv. + Profunda femoris aa/vv.'
+      },
+      {
+        name: 'Adductor Longus',
+        origin: 'Body of pubis',
+        insertion: 'Linea aspera',
+        actions: 'Hip ADD, FLX',
+        innervation: 'VR L2–L4 — obturator n.',
+        perfusion: 'Obturator aa/vv.'
+      },
+      {
+        name: 'Adductor Brevis',
+        origin: 'Body of pubis',
+        insertion: 'Pectineal line (femur); linea aspera',
+        actions: 'Hip ADD, FLX',
+        innervation: 'VR L2–L4 — obturator n.',
+        perfusion: 'Obturator aa/vv.'
+      },
+      {
+        name: 'Gracilis',
+        origin: 'Body of pubis',
+        insertion: 'Pes anserine (medial tibia)',
+        actions: 'Hip ADD, FLX + Leg FLX, IR',
+        innervation: 'VR L2–L4 — obturator n.',
+        perfusion: 'Obturator aa/vv.'
+      },
+      {
+        name: 'Obturator Externus',
+        origin: 'Margin of obturator foramen; obturator membrane',
+        insertion: 'Intertrochanteric fossa of femur',
+        actions: 'Hip ER',
+        innervation: 'VR L2–L4 — obturator n.',
+        perfusion: 'Obturator aa/vv.'
+      },
+      {
+        name: 'Tensor Fasciae Latae (TFL)',
+        origin: 'ASIS; iliac crest',
+        insertion: 'Iliotibial tract (IT band)',
+        actions: 'Hip FLX, IR, ABD (+ stabilization)',
+        innervation: 'VR L4–S1 — superior gluteal n.',
+        perfusion: 'Superior gluteal aa/vv.'
+      },
+      {
+        name: 'Semitendinosus',
+        origin: 'Ischial tuberosity',
+        insertion: 'Pes anserine (medial tibia)',
+        actions: 'Hip EXT + Leg FLX, IR',
+        innervation: 'VR L4–S3 — tibial division of sciatic n.',
+        perfusion: 'Profunda femoris aa/vv.'
+      },
+      {
+        name: 'Semimembranosus',
+        origin: 'Ischial tuberosity',
+        insertion: 'Medial condyle of tibia',
+        actions: 'Hip EXT + Leg FLX, IR',
+        innervation: 'VR L4–S3 — tibial division of sciatic n.',
+        perfusion: 'Profunda femoris aa/vv.'
+      },
+      {
+        name: 'Biceps Femoris (Long head)',
+        origin: 'Ischial tuberosity',
+        insertion: 'Head of fibula',
+        actions: 'Hip EXT + Leg FLX, ER',
+        innervation: 'VR L4–S3 — tibial division of sciatic n.',
+        perfusion: 'Profunda femoris aa/vv.'
+      },
+      {
+        name: 'Biceps Femoris (Short head)',
+        origin: 'Linea aspera; lateral supracondylar line (femur)',
+        insertion: 'Head of fibula',
+        actions: 'Leg FLX, ER',
+        innervation: 'VR L4–S3 — common fibular division of sciatic n.',
+        perfusion: 'Profunda femoris aa/vv.'
+      }
+    ];
+
+    const loadData = () => {
+      try {
+        const raw = localStorage.getItem('pianoDrillData');
+        if (!raw) return defaultData;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed) || parsed.length === 0) return defaultData;
+        return parsed;
+      } catch {
+        return defaultData;
+      }
+    };
+
+    const App = () => {
+      const [cards, setCards] = useState(loadData);
+      const [index, setIndex] = useState(0);
+      const [duration, setDuration] = useState(() => {
+        const saved = Number(localStorage.getItem('pianoDrillDuration'));
+        return Number.isFinite(saved) && saved >= 5 ? saved : 40;
+      });
+      const [secondsLeft, setSecondsLeft] = useState(duration);
+      const [running, setRunning] = useState(false);
+      const [revealed, setRevealed] = useState(false);
+      const [shuffle, setShuffle] = useState(false);
+      const [showImporter, setShowImporter] = useState(false);
+      const [importText, setImportText] = useState('');
+      const [autoStart, setAutoStart] = useState(true);
+
+      const current = cards[index] || {};
+
+      useEffect(() => {
+        localStorage.setItem('pianoDrillDuration', String(duration));
+      }, [duration]);
+
+      useEffect(() => {
+        let id;
+        if (running) {
+          id = setInterval(() => {
+            setSecondsLeft((s) => {
+              if (s <= 1) {
+                clearInterval(id);
+                setRunning(false);
+                setRevealed(true);
+                return 0;
+              }
+              return s - 1;
+            });
+          }, 1000);
+        }
+        return () => clearInterval(id);
+      }, [running]);
+
+      useEffect(() => {
+        // Reset timer when duration changes or when we change cards
+        setSecondsLeft(duration);
+        setRevealed(false);
+        if (autoStart) setRunning(true); else setRunning(false);
+      }, [duration, index]);
+
+      const next = () => setIndex((i) => (i + 1) % cards.length);
+      const prev = () => setIndex((i) => (i - 1 + cards.length) % cards.length);
+
+      const onShuffleToggle = () => {
+        if (!shuffle) {
+          const newOrder = shuffleArray(cards);
+          setCards(newOrder);
+          setIndex(0);
+        }
+        setShuffle((v) => !v);
+      };
+
+      const resetTimer = () => { setSecondsLeft(duration); setRunning(false); setRevealed(false); };
+      const revealNow = () => { setRevealed(true); setRunning(false); };
+
+      const exportJSON = () => {
+        const blob = new Blob([JSON.stringify(cards, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'piano_cards.json'; a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      const onImportTSV = () => {
+        if (!importText.trim()) return;
+        const parsed = parseTSV(importText);
+        if (parsed.length) {
+          setCards(parsed);
+          localStorage.setItem('pianoDrillData', JSON.stringify(parsed));
+          setIndex(0);
+          setShowImporter(false);
+          setImportText('');
+        }
+      };
+
+      const onResetToDefaults = () => {
+        setCards(defaultData);
+        localStorage.setItem('pianoDrillData', JSON.stringify(defaultData));
+        setIndex(0);
+      };
+
+      const onSaveLocal = () => {
+        localStorage.setItem('pianoDrillData', JSON.stringify(cards));
+      };
+
+      useEffect(() => {
+        const onKey = (e) => {
+          if (e.code === 'Space') { e.preventDefault(); setRunning((r) => !r); }
+          else if (e.key === 'ArrowRight') { next(); }
+          else if (e.key === 'ArrowLeft') { prev(); }
+          else if (e.key.toLowerCase() === 'r') { revealNow(); }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+      }, [cards.length]);
+
+      const minutes = Math.floor(secondsLeft / 60);
+      const seconds = secondsLeft % 60;
+
+      const PIANO = [
+        { key: 'P', label: 'Perfusion', value: current.perfusion },
+        { key: 'I', label: 'Innervation', value: current.innervation },
+        { key: 'A', label: 'Actions', value: current.actions },
+        { key: 'N', label: 'Nerve Roots / Notes', value: current.innervation },
+        { key: 'O', label: 'Attachments (Origin / Insertion)', value: `O: ${current.origin || ''}\nI: ${current.insertion || ''}` },
+      ];
+
+      return (
+        <div className="max-w-5xl mx-auto p-4 sm:p-6">
+          <header className="flex flex-col sm:flex-row sm:items-end gap-3 justify-between mb-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">PIANO 40‑Second Drill</h1>
+              <p className="text-sm text-slate-600">Prompt shows a muscle name. Answers (P·I·A·N·O) auto‑reveal when the timer hits zero.</p>
+            </div>
+            <div className="flex items-center gap-2 text-slate-700">
+              <span className="text-xs">Card</span>
+              <span className="font-semibold">{cards.length ? index + 1 : 0}</span>
+              <span className="text-xs">/</span>
+              <span className="font-semibold">{cards.length}</span>
+            </div>
+          </header>
+
+          {/* Controls */}
+          <section className="grid gap-4 sm:grid-cols-3 mb-6">
+            <div className="bg-white rounded-2xl shadow p-4 flex flex-col items-center justify-center">
+              <div className="text-5xl font-bold tabular-nums">{pad2(minutes)}:{pad2(seconds)}</div>
+              <div className="mt-3 flex gap-2">
+                <button onClick={() => setRunning((r) => !r)} className="px-4 py-2 rounded-xl bg-slate-900 text-white hover:opacity-90">{running ? 'Pause' : 'Start'}</button>
+                <button onClick={resetTimer} className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300">Reset</button>
+                <button onClick={revealNow} className="px-4 py-2 rounded-xl bg-emerald-600 text-white hover:opacity-90">Reveal</button>
+              </div>
+              <p className="mt-1 text-xs text-slate-500">Space: Start/Pause · R: Reveal · ←/→: Prev/Next</p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow p-4">
+              <label className="text-sm font-medium">Countdown length: <span className="font-semibold">{duration}s</span></label>
+              <input type="range" min="10" max="120" step="5" value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="w-full mt-2" />
+              <label className="mt-3 flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={autoStart} onChange={(e) => setAutoStart(e.target.checked)} />
+                Auto‑start timer on Next
+              </label>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow p-4 flex flex-col gap-2">
+              <div className="flex gap-2">
+                <button onClick={prev} className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 w-full">Prev</button>
+                <button onClick={next} className="px-4 py-2 rounded-xl bg-slate-900 text-white hover:opacity-90 w-full">Next</button>
+              </div>
+              <button onClick={onShuffleToggle} className={`px-4 py-2 rounded-xl w-full ${shuffle ? 'bg-indigo-600 text-white' : 'bg-slate-200 hover:bg-slate-300'}`}>{shuffle ? 'Shuffling On' : 'Shuffle Order'}</button>
+              <div className="flex gap-2">
+                <button onClick={exportJSON} className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 w-full">Export JSON</button>
+                <button onClick={() => setShowImporter(true)} className="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:opacity-90 w-full">Import TSV</button>
+              </div>
+            </div>
+          </section>
+
+          {/* Card */}
+          <section className="bg-white rounded-3xl shadow p-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Prompt */}
+              <div className="md:w-1/3">
+                <div className="rounded-2xl border border-slate-200 p-5 h-full flex flex-col justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-slate-500">Prompt</p>
+                    <h2 className="mt-1 text-2xl font-semibold">{current.name || '—'}</h2>
+                  </div>
+                  <div className="mt-4 text-xs text-slate-500">Study the prompt. Answers will reveal automatically at 0.</div>
+                </div>
+              </div>
+
+              {/* Answers */}
+              <div className="md:w-2/3">
+                <div className="rounded-2xl border border-slate-200 p-5">
+                  <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Answers (P·I·A·N·O)</p>
+                  <div className={!revealed ? 'blurry select-none pointer-events-none' : ''}>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {PIANO.map((row) => (
+                        <div key={row.key} className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                          <dt className="text-xs font-semibold text-slate-500">{row.label}</dt>
+                          <dd className="mt-1 text-sm whitespace-pre-line">{row.value || '—'}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+
+                  {!revealed && (
+                    <div className="mt-4">
+                      <button onClick={revealNow} className="px-4 py-2 rounded-xl bg-emerald-600 text-white hover:opacity-90">Reveal now</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Importer modal */}
+          {showImporter && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="text-lg font-semibold">Import cards (TSV)</h3>
+                  <button onClick={() => setShowImporter(false)} className="text-slate-600 hover:text-slate-900">✕</button>
+                </div>
+                <p className="mt-1 text-sm text-slate-600">Paste <span className="font-semibold">tab‑separated</span> rows with exactly 6 columns per line:<br/> <code className="bg-slate-100 px-2 py-1 rounded">name\torigin\tinsertion\tactions\tinnervation\tperfusion</code></p>
+                <textarea
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  placeholder={"Gluteus Maximus\tIlium, sacrum, coccyx, sacrotuberous ligament\tGluteal tuberosity, iliotibial tract (IT Band)\tHip ER, EXT\tVR L5–S2 — Inferior gluteal n.\tSuperior + Inferior gluteal aa/vv."}
+                  className="mt-3 w-full h-48 rounded-xl border border-slate-200 p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <div className="mt-3 flex gap-2 justify-end">
+                  <button onClick={onResetToDefaults} className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300">Reset to defaults</button>
+                  <button onClick={onSaveLocal} className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300">Save to browser</button>
+                  <button onClick={onImportTSV} className="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:opacity-90">Import</button>
+                </div>
+                <p className="mt-2 text-xs text-slate-500">Tip: you can copy rows directly from your spreadsheet; most apps use tabs between cells when copying.</p>
+              </div>
+            </div>
+          )}
+
+          <footer className="mt-6 text-xs text-slate-500 text-center">
+            <p>Built for quick anatomy drills. Host this file anywhere (e.g., GitHub Pages) — it’s a single static HTML.</p>
+          </footer>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
